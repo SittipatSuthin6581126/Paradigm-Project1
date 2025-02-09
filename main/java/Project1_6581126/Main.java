@@ -93,6 +93,55 @@ class Customer {
     public int getPoints() { return points; }
 }
 
+class Order {
+    private int orderID;
+    private String customerName;
+    private String productCode;
+    private int units;
+    private int installmentMonths;
+
+    public Order(int orderID, String customerName, String productCode, int units, int installmentMonths){
+        this.orderID = orderID;
+        this.customerName = customerName;
+        this.productCode = productCode;
+        this.units = units;
+        this.installmentMonths = installmentMonths;
+    }
+    // Getter methods
+    public int getOrderID() { return orderID; }
+    public String getCustomerName() { return customerName; }
+    public String getProductCode() { return productCode; }
+    public int getUnits() { return units; }
+    public int getInstallmentMonths() { return installmentMonths; }
+
+
+    public static void loadOrders(String filename, List<Order> orders) {
+        try (Scanner scanner = new Scanner(new File(filename))) {
+            if (scanner.hasNextLine()) scanner.nextLine(); // Skip header line
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(","); // Split line by comma
+
+                if (parts.length >= 5) { // Ensure correct format
+                    int orderID = Integer.parseInt(parts[0].trim());
+                    String customerName = parts[1].trim();
+                    String productCode = parts[2].trim();
+                    int units = Integer.parseInt(parts[3].trim());
+                    int installmentMonths = Integer.parseInt(parts[4].trim());
+
+                    orders.add(new Order(orderID, customerName, productCode, units, installmentMonths));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: File " + filename + " not found.");
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid number format in " + filename);
+        }
+    }
+
+}
+
 // Class representing an installment payment plan
 class InstallmentPlan {
     private int months; // Duration of the installment in months
