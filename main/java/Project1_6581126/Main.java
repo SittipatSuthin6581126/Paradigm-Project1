@@ -1,5 +1,126 @@
 package Project1_6581126;
 import java.util.*;
+import java.io.*;
+
+// Class representing a product with a code, name, price, and sales data
+class Product {
+    private String code; // Unique product code
+    private String name; // Name of the product
+    private double unitPrice; // Price per unit
+    private int totalUnitsSold = 0; // Tracks total units sold
+    private double totalSales = 0.0; // Tracks total sales revenue
+
+    // Constructor to initialize a product
+    public Product(String code, String name, double unitPrice) {
+        this.code = code;
+        this.name = name;
+        this.unitPrice = unitPrice;
+    }
+
+    // Method to record a sale of a specified quantity of the product
+    public void addSale(int quantity) {
+        totalUnitsSold += quantity;
+        totalSales += quantity * unitPrice;
+    }
+
+    // Getter methods to access private attributes
+    public String getCode() { return code; }
+    public String getName() { return name; }
+    public double getUnitPrice() { return unitPrice; }
+    public int getTotalUnitsSold() { return totalUnitsSold; }
+    public double getTotalSales() { return totalSales; }
+
+    // Method to load product data from a file and store it in a Map
+    public static void loadProducts(String filename, Map<String, Product> products) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(","); // Split line by comma
+                if (parts.length == 3) { // Ensure correct data format
+                    products.put(parts[0], new Product(parts[0], parts[1], Double.parseDouble(parts[2])));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading products: " + e.getMessage());
+        }
+    }
+}
+
+// Class representing a customer who can accumulate and redeem points
+class Customer {
+    private String name; // Customer's name
+    private int points; // Reward points earned
+
+    // Constructor to initialize customer with a name and zero points
+    public Customer(String name) {
+        this.name = name;
+        this.points = 0;
+    }
+
+    // Method to add points based on the amount spent (1 point per 500 currency units)
+    public void addPoints(double amount) {
+        points += (int) (amount / 500);
+    }
+
+    // Method to redeem 100 points if available, returning true if successful
+    public boolean redeemPoints() {
+        if (points >= 100) {
+            points -= 100;
+            return true; // Redemption successful
+        }
+        return false; // Not enough points
+    }
+
+    // Getter methods to access private attributes
+    public String getName() { return name; }
+    public int getPoints() { return points; }
+}
+
+// Class representing an installment payment plan
+class InstallmentPlan {
+    private int months; // Duration of the installment in months
+    private double interestRate; // Monthly interest rate
+
+    // Constructor to initialize an installment plan
+    public InstallmentPlan(int months, double interestRate) {
+        this.months = months;
+        this.interestRate = interestRate;
+    }
+
+    // Method to calculate the total interest payable on an amount
+    public double calculateTotalInterest(double amount) {
+        return amount * interestRate * months;
+    }
+
+    // Method to calculate the total amount payable including interest
+    public double calculateTotalPayment(double amount) {
+        return amount + calculateTotalInterest(amount);
+    }
+
+    // Method to calculate the monthly payment for the given amount
+    public double calculateMonthlyPayment(double amount) {
+        return calculateTotalPayment(amount) / months;
+    }
+
+    // Method to load installment plans from a file and store them in a list
+    public static void loadInstallments(String filename, List<InstallmentPlan> installmentPlans) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(","); // Split line by comma
+                if (parts.length == 2) { // Ensure correct data format
+                    int months = Integer.parseInt(parts[0]);
+                    double interestRate = Double.parseDouble(parts[1]);
+                    installmentPlans.add(new InstallmentPlan(months, interestRate));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading installments: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid format in installments file.");
+        }
+    }
+}
 
 public class Main {
     public static void main(String[] args) {
