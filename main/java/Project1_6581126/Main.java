@@ -71,6 +71,23 @@ class Customer {
         return false; // Not enough points
     }
 
+    public static void loadCustomers(String filename, Map<String, Customer> customers) {  //scanner scan from order.txt
+        try (Scanner scanner = new Scanner(new File(filename))) {
+            if (scanner.hasNextLine()) scanner.nextLine(); // Skip header line
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(","); // Split line by comma
+
+                if (parts.length >= 2) { //at least order ID and customer name exist
+                    String customerName = parts[1].trim(); // Extract customer name
+                    customers.putIfAbsent(customerName, new Customer(customerName));   // If customer is not already in the map, add them
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: File " + filename + " not found.");
+        }
+    }
     // Getter methods to access private attributes
     public String getName() { return name; }
     public int getPoints() { return points; }
