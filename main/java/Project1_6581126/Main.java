@@ -113,6 +113,16 @@ class Order {
     public String getProductCode() { return productCode; }
     public int getUnits() { return units; }
     public int getInstallmentMonths() { return installmentMonths; }
+    public String getProductName(){
+        if (productCode.equals("AP")){
+            return "Air Purifiers";
+
+        } else if (productCode.equals("DL")) {
+            return "Digital Locks";
+        }else {return "Hand Dryers";
+
+        }
+    }
 
 
     public static void loadOrders(String filename, List<Order> orders) {
@@ -167,6 +177,8 @@ class InstallmentPlan {
     public double calculateMonthlyPayment(double amount) {
         return calculateTotalPayment(amount) / months;
     }
+    public int getMonths() { return months; }
+    public double getInterestRate() { return interestRate; }
 
     // Method to load installment plans from a file and store them in a list
     public static void loadInstallments(String filename, List<InstallmentPlan> installmentPlans) {
@@ -190,7 +202,121 @@ class InstallmentPlan {
 
 public class Main {
     public static void main(String[] args) {
+        String path = "src/main/java/Project/";
+        String orderFile = path + "orders.txt";
+        String productsFile = path + "products.txt";
+        String installmentsFile = path + "Installments.txt";
 
+        File inOrder = new File(orderFile);
+        File products = new File(productsFile);
+        File installment = new File(installmentsFile);
+
+        List<Product> productList = new ArrayList<>();
+        List<Order> orderList = new ArrayList<>();
+        List<InstallmentPlan> installmentPlanList = new ArrayList<>();
+
+        productList = ReadInputFile.loadProducts(productsFile);
+        orderList = ReadInputFile.loadOrders(orderFile);
+        installmentPlanList = ReadInputFile.loadInstallments(installmentsFile);
+
+        System.out.println("Products loaded:");
+        System.out.println("Read from "+products.getAbsolutePath());
+        for (Product product : productList) {
+            System.out.printf("%-15s %-5s unit price = %.2f\n", product.getName(), product.getCode(), product.getUnitPrice());
+        }
+
+        System.out.println("\nInstallments loaded:");
+        System.out.println("Read from "+installment.getAbsolutePath());
+        for (InstallmentPlan installmentPlan : installmentPlanList) {
+            System.out.printf("%2d-month plan     monthly interest = %.2f%%\n", installmentPlan.getMonths(), installmentPlan.getInterestRate());
+        }
+
+        System.out.println("\nOrders loaded:");
+        System.out.println("Read from "+inOrder.getAbsolutePath());
+        for (Order order : orderList) {
+            System.out.printf("Order %2d >> %6s  %-15s x %2d   %2d-month installments\n",order.getOrderID(),order.getCustomerName(),order.getProductName(),order.getUnits(),order.getInstallmentMonths());
+        }
+
+    }
+}
+class ReadInputFile {
+
+    public static List<Product> loadProducts(String filename) {
+        List<Product> productList = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 3) {
+                    try {
+                        String code = parts[0].trim();
+                        String name = parts[1].trim();
+                        double unitPrice = Double.parseDouble(parts[2].trim()); // Parse unit price
+                        productList.add(new Product(code, name, unitPrice));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Skipping invalid product line: " + line);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading products: " + e.getMessage());
+        }
+        return productList;
+    }
+
+    public static List<Order> loadOrders(String filename) {
+        List<Order> orderList = new ArrayList<>();
+        try (Scanner scanner = new Scanner(new File(filename))) {
+            if (scanner.hasNextLine()) {
+                scanner.nextLine();
+            }
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(",");
+                if (parts.length == 5) {
+                    try {
+                        int id = Integer.parseInt(parts[0].trim());
+                        String name = parts[1].trim();
+                        String productCode = parts[2].trim();
+                        int unit = Integer.parseInt(parts[3].trim());
+                        int installment = Integer.parseInt(parts[4].trim());
+
+                        orderList.add(new Order(id, name, productCode, unit, installment));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Skipping invalid order line: " + line);
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error loading orders: " + e.getMessage());
+        }
+        return orderList;
+    }
+
+
+    public static List<InstallmentPlan> loadInstallments(String filename) {
+        List<InstallmentPlan> installmentPlanList = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+
+
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    try {
+                        int months = Integer.parseInt(parts[0].trim());
+                        double interestRate = Double.parseDouble(parts[1].trim());
+                        installmentPlanList.add(new InstallmentPlan(months, interestRate));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Skipping invalid installment line: " + line);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading installments: " + e.getMessage());
+        }
+        return installmentPlanList;
     }
 }
 // Task 1: Implement Product Class
