@@ -268,7 +268,7 @@ class ReadInputFile {
         List<Order> orderList = new ArrayList<>();
         try (Scanner scanner = new Scanner(new File(filename))) {
             if (scanner.hasNextLine()) {
-                scanner.nextLine();
+                scanner.nextLine(); // Skip header
             }
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
@@ -280,10 +280,9 @@ class ReadInputFile {
                         String productCode = parts[2].trim();
                         int unit = Integer.parseInt(parts[3].trim());
                         int installment = Integer.parseInt(parts[4].trim());
-
                         orderList.add(new Order(id, name, productCode, unit, installment));
                     } catch (NumberFormatException e) {
-                        System.out.println();
+                        System.out.println("Skipping invalid order line: " + line);
                     }
                 }
             }
@@ -292,6 +291,60 @@ class ReadInputFile {
         }
         return orderList;
     }
+
+    public static List<Order> loadOrdersWithErrorHandling(String filename, List<Product> products, List<InstallmentPlan> installmentPlans) {
+        List<Order> orderList = new ArrayList<>();
+        File file = new File(filename);
+        if (!file.exists()) {
+            System.out.println("Orders file not found: " + filename);
+            return orderList;
+        }
+        try (Scanner scanner = new Scanner(file)) {
+            if (scanner.hasNextLine()) {
+                scanner.nextLine(); // Skip header
+            }
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(",");
+                if (parts.length != 5) {
+                    System.out.println("Skipping invalid order line (missing values): " + line);
+                    continue;
+                }
+                try {
+                    int id = Integer.parseInt(parts[0].trim().replace("O", "0"));
+                    String name = parts[1].trim();
+                    String productCode = parts[2].trim();
+                    int unit = Integer.parseInt(parts[3].trim());
+                    int installment = Integer.parseInt(parts[4].trim());
+
+                    if (unit <= 0) {
+                        System.out.println("Skipping order with invalid units: " + line);
+                        continue;
+                    }
+
+                    boolean validProduct = products.stream().anyMatch(p -> p.getCode().equals(productCode));
+                    if (!validProduct) {
+                        System.out.println("Skipping order with invalid product code: " + line);
+                        continue;
+                    }
+
+                    boolean validInstallment = installmentPlans.stream().anyMatch(i -> i.getMonths() == installment);
+                    if (!validInstallment) {
+                        System.out.println("Skipping order with invalid installment plan: " + line);
+                        continue;
+                    }
+
+                    orderList.add(new Order(id, name, productCode, unit, installment));
+                } catch (NumberFormatException e) {
+                    System.out.println("Skipping invalid order line (format error): " + line);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error loading orders: " + e.getMessage());
+        }
+        return orderList;
+    }
+
 
 
     public static List<InstallmentPlan> loadInstallments(String filename) {
