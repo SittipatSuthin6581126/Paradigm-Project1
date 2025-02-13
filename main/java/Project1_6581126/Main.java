@@ -202,7 +202,7 @@ class InstallmentPlan {
 
 public class Main {
     public static void main(String[] args) {
-        String path = "main/java/Project1_6581126/";
+        String path = "src/main/java/Project1_6581126/";
         String orderFile = path + "orders.txt";
         String productsFile = path + "products.txt";
         String installmentsFile = path + "Installments.txt";
