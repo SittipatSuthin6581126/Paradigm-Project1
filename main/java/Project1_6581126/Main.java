@@ -202,7 +202,7 @@ class InstallmentPlan {
 
 public class Main {
     public static void main(String[] args) {
-        String path = "src/main/java/Project/";
+        String path = "main/java/Project1_6581126/";
         String orderFile = path + "orders.txt";
         String productsFile = path + "products.txt";
         String installmentsFile = path + "Installments.txt";
@@ -219,7 +219,7 @@ public class Main {
         orderList = ReadInputFile.loadOrders(orderFile);
         installmentPlanList = ReadInputFile.loadInstallments(installmentsFile);
 
-        System.out.println("Products loaded:");
+        System.out.println("\nProducts loaded:");
         System.out.println("Read from "+products.getAbsolutePath());
         for (Product product : productList) {
             System.out.printf("%-15s %-5s unit price = %.2f\n", product.getName(), product.getCode(), product.getUnitPrice());
@@ -243,10 +243,9 @@ class ReadInputFile {
 
     public static List<Product> loadProducts(String filename) {
         List<Product> productList = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line;
-
-            while ((line = br.readLine()) != null) {
+        try (FileReader fr = new FileReader(filename); Scanner scanner = new Scanner(fr)) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
                 String[] parts = line.split(",");
                 if (parts.length == 3) {
                     try {
@@ -260,7 +259,7 @@ class ReadInputFile {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error loading products: " + e.getMessage());
+            e.printStackTrace();
         }
         return productList;
     }
