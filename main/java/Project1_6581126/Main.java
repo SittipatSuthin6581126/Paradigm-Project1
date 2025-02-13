@@ -254,7 +254,7 @@ class ReadInputFile {
                         double unitPrice = Double.parseDouble(parts[2].trim()); // Parse unit price
                         productList.add(new Product(code, name, unitPrice));
                     } catch (NumberFormatException e) {
-                        System.out.println("Skipping invalid product line: " + line);
+                        System.out.println();
                     }
                 }
             }
@@ -283,7 +283,7 @@ class ReadInputFile {
 
                         orderList.add(new Order(id, name, productCode, unit, installment));
                     } catch (NumberFormatException e) {
-                        System.out.println("Skipping invalid order line: " + line);
+                        System.out.println();
                     }
                 }
             }
@@ -308,7 +308,7 @@ class ReadInputFile {
                         double interestRate = Double.parseDouble(parts[1].trim());
                         installmentPlanList.add(new InstallmentPlan(months, interestRate));
                     } catch (NumberFormatException e) {
-                        System.out.println("Skipping invalid installment line: " + line);
+                        System.out.println();
                     }
                 }
             }
@@ -397,3 +397,4 @@ class ReadInputFile {
 // - Invalid values (e.g., units <= 0, wrong product code, invalid installment plan)
 // - Skip invalid lines but continue processing the rest
 // - Ensure program runs correctly even when errors occur
+//testkmmmm
