@@ -1,97 +1,81 @@
 package Project1_6581126;
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
-// Class representing a product with a code, name, price, and sales data
+class InvalidInputException extends Exception {
+    public InvalidInputException(String message) {
+        super(message);
+    }
+}
 class Product {
-    private String code; // Unique product code
-    private String name; // Name of the product
-    private double unitPrice; // Price per unit
-    private int totalUnitsSold = 0; // Tracks total units sold
-    private double totalSales = 0.0; // Tracks total sales revenue
+    private String code;
+    private String name;
+    private double unitPrice;
+    private int totalUnitsSold = 0;
+    private double totalSales = 0.0;
 
-    // Constructor to initialize a product
     public Product(String code, String name, double unitPrice) {
         this.code = code;
         this.name = name;
         this.unitPrice = unitPrice;
     }
 
-    // Method to record a sale of a specified quantity of the product
     public void addSale(int quantity) {
         totalUnitsSold += quantity;
         totalSales += quantity * unitPrice;
     }
 
-    // Getter methods to access private attributes
-    public String getCode() { return code; }
-    public String getName() { return name; }
-    public double getUnitPrice() { return unitPrice; }
-    public int getTotalUnitsSold() { return totalUnitsSold; }
-    public double getTotalSales() { return totalSales; }
+    public String getCode() {
+        return code;
+    }
 
-    // Method to load product data from a file and store it in a Map
-    public static void loadProducts(String filename, Map<String, Product> products) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(","); // Split line by comma
-                if (parts.length == 3) { // Ensure correct data format
-                    products.put(parts[0], new Product(parts[0], parts[1], Double.parseDouble(parts[2])));
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Error loading products: " + e.getMessage());
-        }
+    public String getName() {
+        return name;
+    }
+
+    public double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public int getTotalUnitsSold() {
+        return totalUnitsSold;
+    }
+
+    public double getTotalSales() {
+        return totalSales;
     }
 }
 
-// Class representing a customer who can accumulate and redeem points
 class Customer {
-    private String name; // Customer's name
-    private int points; // Reward points earned
+    private String name;
+    private int points;
 
-    // Constructor to initialize customer with a name and zero points
     public Customer(String name) {
         this.name = name;
         this.points = 0;
     }
 
-    // Method to add points based on the amount spent (1 point per 500 currency units)
     public void addPoints(double amount) {
         points += (int) (amount / 500);
     }
 
-    // Method to redeem 100 points if available, returning true if successful
     public boolean redeemPoints() {
         if (points >= 100) {
             points -= 100;
-            return true; // Redemption successful
+            return true;
         }
-        return false; // Not enough points
+        return false;
     }
 
-    public static void loadCustomers(String filename, Map<String, Customer> customers) {  //scanner scan from order.txt
-        try (Scanner scanner = new Scanner(new File(filename))) {
-            if (scanner.hasNextLine()) scanner.nextLine(); // Skip header line
-
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(","); // Split line by comma
-
-                if (parts.length >= 2) { //at least order ID and customer name exist
-                    String customerName = parts[1].trim(); // Extract customer name
-                    customers.putIfAbsent(customerName, new Customer(customerName));   // If customer is not already in the map, add them
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("Error: File " + filename + " not found.");
-        }
+    public String getName() {
+        return name;
     }
-    // Getter methods to access private attributes
-    public String getName() { return name; }
-    public int getPoints() { return points; }
+
+    public int getPoints() {
+        return points;
+    }
 }
+
 
 class Order {
     private int orderID;
@@ -100,222 +84,318 @@ class Order {
     private int units;
     private int installmentMonths;
 
-    public Order(int orderID, String customerName, String productCode, int units, int installmentMonths){
+    public Order(int orderID, String customerName, String productCode, int units, int installmentMonths) {
         this.orderID = orderID;
         this.customerName = customerName;
         this.productCode = productCode;
         this.units = units;
         this.installmentMonths = installmentMonths;
     }
-    // Getter methods
-    public int getOrderID() { return orderID; }
-    public String getCustomerName() { return customerName; }
-    public String getProductCode() { return productCode; }
-    public int getUnits() { return units; }
-    public int getInstallmentMonths() { return installmentMonths; }
-    public String getProductName(){
-        if (productCode.equals("AP")){
-            return "Air Purifiers";
 
-        } else if (productCode.equals("DL")) {
-            return "Digital Locks";
-        }else {return "Hand Dryers";
-
-        }
+    public int getOrderID() {
+        return orderID;
     }
 
+    public String getCustomerName() {
+        return customerName;
+    }
 
-    public static void loadOrders(String filename, List<Order> orders) {
-        try (Scanner scanner = new Scanner(new File(filename))) {
-            if (scanner.hasNextLine()) scanner.nextLine(); // Skip header line
+    public String getProductCode() {
+        return productCode;
+    }
 
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(","); // Split line by comma
+    public int getUnits() {
+        return units;
+    }
 
-                if (parts.length >= 5) { // Ensure correct format
+    public int getInstallmentMonths() {
+        return installmentMonths;
+    }
+}
+
+class InstallmentPlan {
+    private int months;
+    private double interestRate;
+
+    public InstallmentPlan(int months, double interestRate) {
+        this.months = months;
+        this.interestRate = interestRate;
+    }
+
+    public double calculateTotalPayment(double amount) {
+        return amount + (amount * interestRate * months);
+    }
+
+    public double calculateMonthlyPayment(double amount) {
+        return calculateTotalPayment(amount) / months;
+    }
+
+    public int getMonths() {
+        return months;
+    }
+
+    public double getInterestRate() {
+        return interestRate;
+    }
+}
+
+class ReadInputFile {
+    public List<Product> loadProducts(String filename) throws FileNotFoundException {
+        List<Product> productList = new ArrayList<>();
+        Scanner scanner = new Scanner(new File(filename)); // Throws FileNotFoundException if missing
+
+        if (scanner.hasNextLine()) scanner.nextLine(); // Skip header
+        while (scanner.hasNextLine()) {
+            String[] parts = scanner.nextLine().split(",");
+            if (parts.length == 3) {
+                productList.add(new Product(parts[0].trim(), parts[1].trim(), Double.parseDouble(parts[2].trim())));
+            }
+        }
+        scanner.close();
+        return productList;
+    }
+
+    public List<Order> loadOrders(String filename) throws FileNotFoundException {
+        List<Order> orderList = new ArrayList<>();
+        Scanner scanner = new Scanner(new File(filename)); // Throws FileNotFoundException if missing
+
+        if (scanner.hasNextLine()) scanner.nextLine(); // Skip header
+        while (scanner.hasNextLine()) {
+            String[] parts = scanner.nextLine().split(",");
+            if (parts.length == 5) {
+                try {
                     int orderID = Integer.parseInt(parts[0].trim());
                     String customerName = parts[1].trim();
                     String productCode = parts[2].trim();
                     int units = Integer.parseInt(parts[3].trim());
                     int installmentMonths = Integer.parseInt(parts[4].trim());
 
-                    orders.add(new Order(orderID, customerName, productCode, units, installmentMonths));
+                    if (units > 0 && installmentMonths >= 0) {
+                        orderList.add(new Order(orderID, customerName, productCode, units, installmentMonths));
+                    } else {
+                        System.err.println("Skipping invalid order: " + Arrays.toString(parts));
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("Skipping invalid order format: " + Arrays.toString(parts));
                 }
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("Error: File " + filename + " not found.");
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Invalid number format in " + filename);
         }
+        scanner.close();
+        return orderList;
     }
+    public List<InstallmentPlan> loadInstallments(String filename) throws FileNotFoundException {
+        List<InstallmentPlan> installmentPlanList = new ArrayList<>();
+        Scanner scanner = new Scanner(new File(filename)); // Throws FileNotFoundException if missing
 
-}
-
-// Class representing an installment payment plan
-class InstallmentPlan {
-    private int months; // Duration of the installment in months
-    private double interestRate; // Monthly interest rate
-
-    // Constructor to initialize an installment plan
-    public InstallmentPlan(int months, double interestRate) {
-        this.months = months;
-        this.interestRate = interestRate;
-    }
-
-    // Method to calculate the total interest payable on an amount
-    public double calculateTotalInterest(double amount) {
-        return amount * interestRate * months;
-    }
-
-    // Method to calculate the total amount payable including interest
-    public double calculateTotalPayment(double amount) {
-        return amount + calculateTotalInterest(amount);
-    }
-
-    // Method to calculate the monthly payment for the given amount
-    public double calculateMonthlyPayment(double amount) {
-        return calculateTotalPayment(amount) / months;
-    }
-    public int getMonths() { return months; }
-    public double getInterestRate() { return interestRate; }
-
-    // Method to load installment plans from a file and store them in a list
-    public static void loadInstallments(String filename, List<InstallmentPlan> installmentPlans) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(","); // Split line by comma
-                if (parts.length == 2) { // Ensure correct data format
-                    int months = Integer.parseInt(parts[0]);
-                    double interestRate = Double.parseDouble(parts[1]);
-                    installmentPlans.add(new InstallmentPlan(months, interestRate));
+        if (scanner.hasNextLine()) scanner.nextLine(); // Skip header
+        while (scanner.hasNextLine()) {
+            String[] parts = scanner.nextLine().split(",");
+            if (parts.length == 2) {
+                try {
+                    int months = Integer.parseInt(parts[0].trim());
+                    double interestRate = Double.parseDouble(parts[1].trim());
+                    if (months >= 0 && interestRate >= 0) {
+                        installmentPlanList.add(new InstallmentPlan(months, interestRate));
+                    } else {
+                        System.err.println("Skipping invalid installment: " + Arrays.toString(parts));
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("Skipping invalid installment format: " + Arrays.toString(parts));
                 }
             }
-        } catch (IOException e) {
-            System.out.println("Error loading installments: " + e.getMessage());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid format in installments file.");
         }
+        scanner.close();
+        return installmentPlanList;
     }
 }
+
+
+
 
 public class Main {
     public static void main(String[] args) {
         String path = "src/main/java/Project1_6581126/";
-        String orderFile = path + "orders.txt";
-        String productsFile = path + "products.txt";
-        String installmentsFile = path + "Installments.txt";
+        ReadInputFile reader = new ReadInputFile();
+        Scanner userInput = new Scanner(System.in);
 
-        File inOrder = new File(orderFile);
-        File products = new File(productsFile);
-        File installment = new File(installmentsFile);
+        List<Product> productList = null;
+        List<Order> orderList = null;
+        List<InstallmentPlan> installmentPlanList = null;
+        Map<String, Customer> customers = new HashMap<>();
+        Map<String, List<Order>> productOrders = new HashMap<>();
+        String productFileName = path + "products.txt";
+        String installmentFileName = path + "installments.txt";
+        String orderFileName = path + "orders.txt";
 
-        List<Product> productList = new ArrayList<>();
-        List<Order> orderList = new ArrayList<>();
-        List<InstallmentPlan> installmentPlanList = new ArrayList<>();
+        boolean productsLoaded = false;
+        boolean ordersLoaded = false;
+        boolean installmentsLoaded = false;
 
-        productList = ReadInputFile.loadProducts(productsFile);
-        orderList = ReadInputFile.loadOrders(orderFile);
-        installmentPlanList = ReadInputFile.loadInstallments(installmentsFile);
-
-        System.out.println("\nProducts loaded:");
-        System.out.println("Read from "+products.getAbsolutePath());
+        // Load products
+        while (!productsLoaded) {
+            try {
+                productList = reader.loadProducts(productFileName);
+                productsLoaded = true;
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + productFileName);
+                System.out.print("Enter new product file name: ");
+                productFileName = userInput.nextLine().trim();
+                if (!productFileName.contains("/")) productFileName = path + productFileName;
+            }
+        }
+        System.out.println("\nRead from " + productFileName);
         for (Product product : productList) {
-            System.out.printf("%-15s %-5s unit price = %.2f\n", product.getName(), product.getCode(), product.getUnitPrice());
+            System.out.printf("%-20s (%-2s)   unit price = %,6.0f\n", product.getName(), product.getCode(), product.getUnitPrice());
         }
 
-        System.out.println("\nInstallments loaded:");
-        System.out.println("Read from "+installment.getAbsolutePath());
-        for (InstallmentPlan installmentPlan : installmentPlanList) {
-            System.out.printf("%2d-month plan     monthly interest = %.2f%%\n", installmentPlan.getMonths(), installmentPlan.getInterestRate());
+        // Load installment plans
+        while (!installmentsLoaded) {
+            try {
+                installmentPlanList = reader.loadInstallments(installmentFileName);
+                installmentsLoaded = true;
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + installmentFileName);
+                System.out.print("Enter new installment file name: ");
+                installmentFileName = userInput.nextLine().trim();
+                if (!installmentFileName.contains("/")) installmentFileName = path + installmentFileName;
+            }
+        }
+        System.out.println("\nRead from " + installmentFileName);
+        for (InstallmentPlan plan : installmentPlanList) {
+            System.out.printf("%2d-month plan     monthly interest = %.2f%%\n", plan.getMonths(), plan.getInterestRate());
         }
 
-        System.out.println("\nOrders loaded:");
-        System.out.println("Read from "+inOrder.getAbsolutePath());
+        // Load order
+        while (!ordersLoaded) {
+            try {
+                orderList = reader.loadOrders(orderFileName);
+                ordersLoaded = true;
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + orderFileName);
+                System.out.print("Enter new order file name: ");
+                orderFileName = userInput.nextLine().trim();
+                if (!orderFileName.contains("/")) orderFileName = path + orderFileName;
+            }
+        }
+        System.out.println("\nRead from " + orderFileName);
         for (Order order : orderList) {
-            System.out.printf("Order %2d >> %6s  %-15s x %2d   %2d-month installments\n",order.getOrderID(),order.getCustomerName(),order.getProductName(),order.getUnits(),order.getInstallmentMonths());
+            System.out.printf("Order %2d >> %5s  %-15s x %2d   %2d-month installments\n",
+                    order.getOrderID(), order.getCustomerName(), getProductName(order.getProductCode()), order.getUnits(), order.getInstallmentMonths());
         }
 
-    }
-}
-class ReadInputFile {
-
-    public static List<Product> loadProducts(String filename) {
-        List<Product> productList = new ArrayList<>();
-        try (FileReader fr = new FileReader(filename); Scanner scanner = new Scanner(fr)) {
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(",");
-                if (parts.length == 3) {
-                    try {
-                        String code = parts[0].trim();
-                        String name = parts[1].trim();
-                        double unitPrice = Double.parseDouble(parts[2].trim()); // Parse unit price
-                        productList.add(new Product(code, name, unitPrice));
-                    } catch (NumberFormatException e) {
-                        System.out.println();
+        System.out.println("\n=== Order processing ===");
+        for (Order order : orderList) {
+            try {
+                Product productOrder = null;
+                for (Product product : productList) {
+                    if (product.getCode().equals(order.getProductCode())) {
+                        productOrder = product;
+                        break;
                     }
                 }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return productList;
-    }
+                if (productOrder == null) throw new InvalidInputException("Invalid product code: " + order.getProductCode());
 
-    public static List<Order> loadOrders(String filename) {
-        List<Order> orderList = new ArrayList<>();
-        try (Scanner scanner = new Scanner(new File(filename))) {
-            if (scanner.hasNextLine()) {
-                scanner.nextLine();
-            }
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(",");
-                if (parts.length == 5) {
-                    try {
-                        int id = Integer.parseInt(parts[0].trim());
-                        String name = parts[1].trim();
-                        String productCode = parts[2].trim();
-                        int unit = Integer.parseInt(parts[3].trim());
-                        int installment = Integer.parseInt(parts[4].trim());
+                if (order.getUnits() < 0) throw new InvalidInputException("Invalid units: " + order.getUnits());
 
-                        orderList.add(new Order(id, name, productCode, unit, installment));
-                    } catch (NumberFormatException e) {
-                        System.out.println();
+                productOrder.addSale(order.getUnits());
+                customers.putIfAbsent(order.getCustomerName(), new Customer(order.getCustomerName()));
+                Customer customer = customers.get(order.getCustomerName());
+
+                double subTotal1 = productOrder.getUnitPrice() * order.getUnits();
+                double discount = 0.0;
+                int previousPoints = customer.getPoints();
+                boolean usedPoints = false;
+                if (previousPoints >= 100) {
+                    discount = Math.floor(subTotal1 * 0.05);
+                    customer.redeemPoints();
+                    usedPoints = true;
+                } else {
+                    discount = 200.0;
+                }
+
+                double subTotal2 = subTotal1 - discount;
+                int pointsEarned = (int)(subTotal1 / 500);
+                customer.addPoints(pointsEarned * 500);
+
+                double totalInterest = 0;
+                double monthlyPayment = 0;
+                if (order.getInstallmentMonths() > 0) {
+                    InstallmentPlan installmentPlan = installmentPlanList.stream()
+                            .filter(p -> p.getMonths() == order.getInstallmentMonths())
+                            .findFirst().orElse(null);
+
+                    if (installmentPlan != null) {
+                        totalInterest = (subTotal2 * (installmentPlan.getInterestRate() / 100)) * installmentPlan.getMonths();
+                        monthlyPayment = (subTotal2 + totalInterest) / installmentPlan.getMonths();
                     }
                 }
+
+                productOrders.putIfAbsent(productOrder.getCode(), new ArrayList<>());
+                productOrders.get(productOrder.getCode()).add(order);
+
+                // Print formatted order summary
+                System.out.printf("%2d. %-7s  (%4d pts)  order   = %-15s x %2d   sub-total(1)   = %,12.2f THB  (+ %d pts next order)\n",
+                        order.getOrderID(), customer.getName(), (previousPoints),
+                        productOrder.getName(), order.getUnits(), subTotal1, pointsEarned);
+                System.out.printf("%25sdiscount = %6.2f                sub-total(2)   = %,12.2f THB", "", discount, subTotal2);
+
+                if (discount > 200.0) {
+                    System.out.printf("      (- %d pts)", 100);
+                }
+                System.out.println();
+
+                if (order.getInstallmentMonths() == 0) {
+                    System.out.printf("%37s\n", "full payment");
+                }
+
+                if (order.getInstallmentMonths() > 0) {
+                    System.out.printf("%24s%2d-month installments              total interest = %,12.2f \n", "", order.getInstallmentMonths(), totalInterest);
+                    System.out.printf("%25stotal    = %,12.2f            monthly total  = %,12.2f \n", "", subTotal2 + totalInterest, monthlyPayment);
+                } else {
+                    System.out.printf("%25stotal    = %,12.2f \n", "", subTotal2);
+                }
+                System.out.println();
+
+            } catch (InvalidInputException e) {
+                System.err.println(e.getMessage());
+                continue;
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("Error loading orders: " + e.getMessage());
         }
-        return orderList;
+
+        generateProductSummary(productList, productOrders);
+        generateCustomerSummary(customers);
     }
 
-
-    public static List<InstallmentPlan> loadInstallments(String filename) {
-        List<InstallmentPlan> installmentPlanList = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line;
-
-
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 2) {
-                    try {
-                        int months = Integer.parseInt(parts[0].trim());
-                        double interestRate = Double.parseDouble(parts[1].trim());
-                        installmentPlanList.add(new InstallmentPlan(months, interestRate));
-                    } catch (NumberFormatException e) {
-                        System.out.println();
-                    }
-                }
+    private static void generateProductSummary(List<Product> products, Map<String, List<Order>> productOrders) {
+        System.out.println("\n=== Product summary ===");
+        products.sort(Comparator.comparing(Product::getTotalUnitsSold).reversed().thenComparing(Product::getName));
+        Random random = new Random();
+        for (Product product : products) {
+            System.out.printf("%-14s  total sales = %d units = %,12.2f    ",
+                    product.getName(),
+                    product.getTotalUnitsSold(), product.getTotalSales());
+            List<Order> eligibleOrders = productOrders.getOrDefault(product.getCode(), new ArrayList<>());
+            if (!eligibleOrders.isEmpty()) {
+                Order luckyWinner = eligibleOrders.get(new Random().nextInt(eligibleOrders.size()));
+                System.out.printf("lucky draw winner = %s (order %2d)\n", luckyWinner.getCustomerName(), luckyWinner.getOrderID());
             }
-        } catch (IOException e) {
-            System.out.println("Error loading installments: " + e.getMessage());
         }
-        return installmentPlanList;
+    }
+
+    private static void generateCustomerSummary(Map<String, Customer> customers) {
+        System.out.println("\n=== Customer summary ===");
+        customers.values().stream()
+                .sorted(Comparator.comparing(Customer::getPoints).reversed().thenComparing(Customer::getName))
+                .forEach(c -> System.out.printf("%s   remaining points = %,5d\n", c.getName(), c.getPoints()));
+    }
+
+    private static String getProductName(String productCode) {
+        switch (productCode) {
+            case "AP": return "Air Purifiers";
+            case "DL": return "Digital Locks";
+            case "HD": return "Hand Dryers";
+            default: return "Unknown";
+        }
     }
 }
 
